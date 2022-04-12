@@ -6,10 +6,11 @@
          </div>
          <div class="group">
             <div class="group__row">
-               <input v-model="valP" type="text" class="form-control" placeholder="Введите простое число P" style="margin-right:15px;"/>
-               <input v-model="valQ" type="text" class="form-control" placeholder="Введите простое число Q"/>
+               <input v-model="valP" id="P" type="text" class="form-control" placeholder="Введите простое число P" style="margin-right:15px;" @input="funcCheckErrorP_Q($event)"/>
+               <input v-model="valQ" id="Q" type="text" class="form-control" placeholder="Введите простое число Q" @input="funcCheckErrorP_Q($event)"/>
             </div>
-            <textarea v-model="messageInc" class="form-control" placeholder="Введите сообщение"/>
+            <textarea v-model="messageInc" class="form-control" placeholder="Введите сообщение"
+            @input="funcCheckErrorMessage($event)"/>
             <div class="form-check">
                <input class="form-check-input" type="radio" name="flexRadioDefault" value="ru" id="flexRadioDefault1" v-model="typeLang">
                <label class="form-check-label" for="flexRadioDefault1">Русский</label>
@@ -24,7 +25,7 @@
       
       <div v-if="onClick" class="form__group__right" style="margin-right:-25px">
          <div class="group__right">
-            <textarea v-model="messageDec" class="form-control"/>
+            <textarea v-model="messageDec" class="form-control" readonly/>
          </div>
          <div class="group__right">
             <label class="label__text" style="margin-left: 15px;">: Пользователь B</label>
@@ -45,7 +46,11 @@ export default {
          valQ: 11,
          messageInc: "Hello",
          messageDec: "",
-         typeLang: 'en'
+         typeLang: 'en',
+
+         validInteger: /^([1-9][0-9]*)$/,
+         validRuLang: /^[a-яА-Я]*$/,
+         validEngLang: /^[a-zA-Z]*$/
       }
    },
    methods: {
@@ -59,6 +64,33 @@ export default {
             mesLanguage: this.typeLang
          }
          this.messageDec = RSA(params);
+      },
+      funcCheckErrorP_Q(event) {
+         if(this.validInteger.test(event.target.value) && this.funcOnSample(event.target.value)) {
+            this.funcDeleteError(event);
+         } else {
+            this.funcAddError(event);
+         }
+      },
+      funcCheckErrorMessage(event) {
+         if(this.typeLang == "en" && this.validEngLang.test(event.target.value) && this.funcOnSample(event.target.value)) {
+            this.funcDeleteError(event);
+         } else if (this.typeLang == "ru" && this.validRuLang.test(event.target.value) && this.funcOnSample(event.target.value)) {
+            this.funcDeleteError(event);
+         } else {
+            this.funcAddError(event);
+         }
+      },
+      funcOnSample(num) {
+         for(var i = 2; i < num; i++)
+            if(num % i === 0) return false;
+         return true;
+      },
+      funcAddError(event) {
+         event.target.className += " error";
+      },
+      funcDeleteError(event) {
+         event.target.className = "form-control";
       }
    }
 }
@@ -133,6 +165,10 @@ textarea {
 
 .form-check-label {
    margin-right: 20px;
+}
+
+.error {
+   box-shadow: 0 0 5px red;
 }
 
 </style>
