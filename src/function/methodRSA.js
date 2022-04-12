@@ -79,9 +79,11 @@ function FindOpenKey(valEulerFunc) {
 // алгоритм RSA
 function RSA(params) {
   let valueN = params.valueP * params.valueQ;
+  console.log("N", valueN);
 
   // значение функции Эйлера
   let funcEuler = (params.valueP - 1) * (params.valueQ - 1);
+  console.log("Euler", funcEuler);
 
   // поиск открытого ключа
   let keyOpen = FindOpenKey(funcEuler);
@@ -93,16 +95,23 @@ function RSA(params) {
     keyOpen = FindOpenKey(funcEuler);
     secretKey = FindSecretKey(funcEuler, keyOpen);
   }
+  console.log("проверка", (keyOpen * secretKey) % funcEuler);
+  console.log("K", keyOpen);
+  console.log("k", secretKey);
 
   // перевод сообщения в массив целых чисел
   let messageToInt = ConvertToInt(params.messageM, params.mesLanguage);
+  console.log("конвертация:", messageToInt);
 
   // шифрование сообщения M
   let encMessage = EncOrDecnMessage(messageToInt, keyOpen, valueN);
+  console.log("enc", encMessage);
 
   // расшифровка сообщения M
   let decMessage = EncOrDecnMessage(encMessage, secretKey, valueN);
+  console.log("dec", decMessage);
 
+  console.log("lang", params.mesLanguage);
   return ConvertToString(decMessage, params.mesLanguage);
 }
 

@@ -73,9 +73,9 @@ export default {
          }
       },
       funcCheckErrorMessage(event) {
-         if(this.typeLang == "en" && this.validEngLang.test(event.target.value) && this.funcOnSample(event.target.value)) {
+         if(this.typeLang == 'en' && this.validEngLang.test(event.target.value)) {
             this.funcDeleteError(event);
-         } else if (this.typeLang == "ru" && this.validRuLang.test(event.target.value) && this.funcOnSample(event.target.value)) {
+         } else if (this.typeLang == 'ru' && this.validRuLang.test(event.target.value)) {
             this.funcDeleteError(event);
          } else {
             this.funcAddError(event);
