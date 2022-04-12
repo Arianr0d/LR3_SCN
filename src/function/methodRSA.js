@@ -1,3 +1,4 @@
+
 // функция перевода массива в строку
 function ConvertToString(mesInt, lang) {
   let result = "";
@@ -14,7 +15,7 @@ function ConvertToString(mesInt, lang) {
 function EncOrDecnMessage(mes, key, N) {
   let M = [];
   for (let i = 0; i < mes.length; i++) {
-    M[i] = mes[i] ** key % N;
+    M[i] = mes[i]**key % N ? (mes[i] ** key) % N : N;
   }
   return M;
 }
@@ -68,10 +69,10 @@ function NOD(left, right) {
 function FindOpenKey(valEulerFunc) {
   let min = 2;
   let max = valEulerFunc;
-  let K = Math.floor(Math.random() * (max - min + 1)) + min;
+  let K = Math.floor(Math.random() * (max - min)) + min;
 
   while (NOD(K, valEulerFunc) != 1) {
-    K = Math.floor(Math.random() * (max - min + 1)) + min;
+    K = Math.floor(Math.random() * (max - min)) + min;
   }
   return K;
 }
@@ -95,9 +96,8 @@ function RSA(params) {
     keyOpen = FindOpenKey(funcEuler);
     secretKey = FindSecretKey(funcEuler, keyOpen);
   }
-  console.log("проверка", (keyOpen * secretKey) % funcEuler);
-  console.log("K", keyOpen);
-  console.log("k", secretKey);
+  console.log("открытый", keyOpen);
+  console.log("закрытый", secretKey);
 
   // перевод сообщения в массив целых чисел
   let messageToInt = ConvertToInt(params.messageM, params.mesLanguage);
