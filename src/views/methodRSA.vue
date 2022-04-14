@@ -35,7 +35,8 @@
 </template>
 
 <script>
-import RSA from '../function/methodRSA.js'
+import RSA from '../function/methodRSA.js';
+import GOSTEasySwap from '../function/methodGOSTEasySwap.js';
 
 export default {
    name: 'methodRSA',
@@ -64,6 +65,17 @@ export default {
             mesLanguage: this.typeLang
          }
          this.messageDec = RSA(params);
+
+         /*
+            ! тест алгоритма
+         */
+         let param = {
+            messageM: this.messageInc,
+            mesLanguage: this.typeLang
+         }
+         let res = GOSTEasySwap(param);
+         console.log(res)
+
       },
       funcCheckErrorP_Q(event) {
          if(this.validInteger.test(event.target.value) && this.funcOnSample(event.target.value)) {
