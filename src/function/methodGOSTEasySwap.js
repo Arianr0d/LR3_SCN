@@ -8,17 +8,18 @@ function IncriptionBlock(N1, N2, key) {
     K = 0;
   key.map((item, index) => (K += item * 2 ** (32 - index - 1)));
   for (let i = 0; i < N1.length; i++) {
-    let a = 0, b = 0;
+    let a = 0,
+      b = 0;
 
-    N1[i].forEach((item, index ) => {
-      a += item * 2 ** (32 - index - 1)
+    N1[i].forEach((item, index) => {
+      a += item * 2 ** (32 - index - 1);
     });
-    N2[i].forEach((item, index ) => {
-      b += item * 2 ** (32 - index - 1)
+    N2[i].forEach((item, index) => {
+      b += item * 2 ** (32 - index - 1);
     });
-    sumMod2_32[i] = ConvertToBinary([Math.abs( (a + K) % 2 ** 32 ^ b )], 32);
+    sumMod2_32[i] = ConvertToBinary([Math.abs((a + K) % 2 ** 32 ^ b)], 32);
   }
-  return  sumMod2_32;
+  return sumMod2_32;
 }
 
 // функция генерации ключей
@@ -117,12 +118,54 @@ function GOSTEasySwap(params) {
       );
     }
   }
-  console.log(hoarderN1, hoarderN2)
+  console.log(hoarderN1, hoarderN2);
   let T = [];
   for (let i = 0; i < blocks.length; i++) {
     T[i] = [].concat(hoarderN1[32][i], hoarderN2[32][i]);
   }
-  return T;
+
+  /*
+      TODO: процесс блочного расшифрования сообщения
+   */
+  // массив ключей для расшифрования
+  let keyDec = [].concat(keys.reverse(), keys, keys.reverse(), keys.reverse());
+
+  let hoarderN1Dec = [T.map((item) => item.slice(0, 32))],
+    hoarderN2Dec = [T.map((item) => item.slice(32, 64))];
+
+  for (let i = 1; i <= 32; i++) {
+    if (i <= 8) {
+      hoarderN1Dec[32 - i] = IncriptionBlock(
+        hoarderN1Dec[32 - i + 1],
+        hoarderN2Dec[32 - i + 1],
+        keyDec[i - 1]
+      );
+      hoarderN2Dec[32 - i] = hoarderN1Dec[32 - i + 1];
+    } else if (i <= 31) {
+      hoarderN1Dec[32 - i] = IncriptionBlock(
+        hoarderN1Dec[32 - i + 1],
+        hoarderN2Dec[32 - i + 1],
+        keyDec[(32 - i) % 8]
+      );
+      hoarderN2Dec[32 - i] = hoarderN1Dec[32 - i + 1];
+    } else {
+      hoarderN1Dec[32 - i] = hoarderN1Dec[32 - i + 1];
+      hoarderN2Dec[32 - i] = IncriptionBlock(
+        hoarderN1Dec[32 - i + 1],
+        hoarderN2Dec[32 - i + 1],
+        keyDec[32 - i]
+      );
+    }
+  }
+
+  // массив расшифрованных битов 
+  let T0 = [];
+  for (let i = 0; i < blocks.length; i++) {
+    T0[i] = [].concat(hoarderN1Dec[32][i], hoarderN2Dec[32][i]);
+  }
+
+  
+  return T0;
 }
 
 export default GOSTEasySwap;
