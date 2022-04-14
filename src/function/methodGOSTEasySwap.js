@@ -10,15 +10,15 @@ function IncriptionBlock(N1, N2, key) {
   for (let i = 0; i < N1.length; i++) {
     let a = 0, b = 0;
 
-    N1[i].forEach((item, index ) => {
+    N1[i].forEach((item, index) => {
       a += item * 2 ** (32 - index - 1)
     });
-    N2[i].forEach((item, index ) => {
+    N2[i].forEach((item, index) => {
       b += item * 2 ** (32 - index - 1)
     });
-    sumMod2_32[i] = ConvertToBinary([Math.abs( (a + K) % 2 ** 32 ^ b )], 32);
+    sumMod2_32[i] = ConvertToBinary([Math.abs((a + K) % 2 ** 32 ^ b)], 32);
   }
-  return  sumMod2_32;
+  return sumMod2_32;
 }
 
 // функция генерации ключей
@@ -47,6 +47,23 @@ function Blocking(mes) {
   return block;
 }
 
+function convertBlocking(blocks) {
+  let simb = ''
+  let mes = []
+  for (let block of blocks) {
+    for (let item of block) {
+      simb += item
+      if (simb.length === 8) {
+        let a = 0
+        simb.split('').forEach((item, index) => a += Number(item) * 2 ** (8 - index - 1))
+        mes.push(a)
+        simb = ''
+      }
+    }
+  }
+  return mes
+}
+
 // функция перевода сообщения в массив целых чисел
 function ConvertToInt(mes, lang) {
   if (lang == "en") {
@@ -56,11 +73,23 @@ function ConvertToInt(mes, lang) {
   }
 }
 
+// функция перевода массива в строку
+function ConvertToString(mesInt, lang) {
+  let result = "";
+  if (lang == "en") {
+    mesInt.map((letter) => (result += String.fromCharCode(letter)));
+    return result;
+  } else if (lang == "ru") {
+    mesInt.map((letter) => (result += String.fromCharCode(letter)));
+    return result;
+  }
+}
+
 function ConvertToBinary(massInt, countBit) {
   let binaryArr = "";
   for (let item of massInt) {
     let binary = (item % 2).toString();
-    for (; item > 1; ) {
+    for (; item > 1;) {
       item = parseInt(item / 2);
       binary = (item % 2) + binary;
     }
@@ -122,7 +151,9 @@ function GOSTEasySwap(params) {
   for (let i = 0; i < blocks.length; i++) {
     T[i] = [].concat(hoarderN1[32][i], hoarderN2[32][i]);
   }
-  return T;
+  let answer = convertBlocking(T)
+  answer = ConvertToString(answer, params.mesLanguage)
+  return answer;
 }
 
 export default GOSTEasySwap;
