@@ -5,7 +5,10 @@
 
 <script>
 export default {
-  name: 'App'
+  name: 'App',
+  created(){
+    console.log(5^2)
+  }
 }
 </script>
 

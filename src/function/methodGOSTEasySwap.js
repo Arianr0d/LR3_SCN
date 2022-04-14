@@ -1,20 +1,24 @@
 // функция сложения по модулю 2^32 двух 32-разрядных
 
+import math from "mathjs";
+
 // функция шифрования блока
 function IncriptionBlock(N1, N2, key) {
   let sumMod2_32 = [],
-    K;
-  console.log("N1", N1[0]);
+    K = 0;
   key.map((item, index) => (K += item * 2 ** (32 - index - 1)));
   for (let i = 0; i < N1.length; i++) {
-    let a, b;
-    N1[i].forEach((item, index) => (a += item * 2 ** (32 - index - 1)));
-    N2[i].forEach((item, index) => (b += item * 2 ** (32 - index - 1)));
-    console.log(a);
+    let a = 0, b = 0;
 
-    sumMod2_32[i] = ConvertToBinary((a + K) % 2 ** 32 ^ b, 32);
+    N1[i].forEach((item, index ) => {
+      a += item * 2 ** (32 - index - 1)
+    });
+    N2[i].forEach((item, index ) => {
+      b += item * 2 ** (32 - index - 1)
+    });
+    sumMod2_32[i] = ConvertToBinary([Math.abs( (a + K) % 2 ** 32 ^ b )], 32);
   }
-  return sumMod2_32;
+  return  sumMod2_32;
 }
 
 // функция генерации ключей
@@ -75,19 +79,19 @@ function GOSTEasySwap(params) {
   let messageToInt = ConvertToInt(params.messageM, params.mesLanguage);
   let messageToBin = ConvertToBinary(messageToInt, 8);
 
-  console.log(messageToInt);
-  console.log(messageToBin);
+  //console.log(messageToInt);
+  //console.log(messageToBin);
 
   // разбиение на блоки
   let blocks = Blocking(messageToBin);
-  console.log(blocks);
+  //console.log(blocks);
 
   // генерация ключей
   let keys = GenerateKeys(),
     keysInc = [].concat(keys.reverse(), keys.reverse(), keys.reverse(), keys);
   let hoarderN1 = [blocks.map((item) => item.slice(0, 32))],
     hoarderN2 = [blocks.map((item) => item.slice(32, 64))];
-  console.log(hoarderN1);
+  console.log(messageToInt, messageToBin);
 
   for (let i = 1; i <= 32; i++) {
     if (i <= 24) {
@@ -113,11 +117,11 @@ function GOSTEasySwap(params) {
       );
     }
   }
+  console.log(hoarderN1, hoarderN2)
   let T = [];
   for (let i = 0; i < blocks.length; i++) {
     T[i] = [].concat(hoarderN1[32][i], hoarderN2[32][i]);
   }
-
   return T;
 }
 
