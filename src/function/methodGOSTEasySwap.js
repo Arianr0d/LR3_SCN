@@ -1,7 +1,5 @@
 // функция сложения по модулю 2^32 двух 32-разрядных
 
-import math from "mathjs";
-
 // функция шифрования блока
 function IncriptionBlock(N1, N2, key) {
   let sumMod2_32 = [],
@@ -48,12 +46,41 @@ function Blocking(mes) {
   return block;
 }
 
+function convertBlocking(blocks) {
+  let simb = ''
+  let mes = []
+  for (let block of blocks) {
+    for (let item of block) {
+      simb += item
+      if (simb.length === 8) {
+        let a = 0
+        simb.split('').forEach((item, index) => a += Number(item) * 2 ** (8 - index - 1))
+        mes.push(a)
+        simb = ''
+      }
+    }
+  }
+  return mes
+}
+
 // функция перевода сообщения в массив целых чисел
 function ConvertToInt(mes, lang) {
   if (lang == "en") {
-    return Array.from(mes).map((letter) => letter.toLowerCase().charCodeAt(0));
+    return Array.from(mes).map((letter) => letter.toLowerCase().charCodeAt(0)-96);
   } else if (lang == "ru") {
-    return Array.from(mes).map((letter) => letter.toLowerCase().charCodeAt(0));
+    return Array.from(mes).map((letter) => letter.toLowerCase().charCodeAt(0)-1071);
+  }
+}
+
+// функция перевода массива в строку
+function ConvertToString(mesInt, lang) {
+  let result = "";
+  if (lang == "en") {
+    mesInt.map((letter) => (result += String.fromCharCode(letter+96)));
+    return result;
+  } else if (lang == "ru") {
+    mesInt.map((letter) => (result += String.fromCharCode(letter+1071)));
+    return result;
   }
 }
 
@@ -61,7 +88,7 @@ function ConvertToBinary(massInt, countBit) {
   let binaryArr = "";
   for (let item of massInt) {
     let binary = (item % 2).toString();
-    for (; item > 1; ) {
+    for (; item > 1;) {
       item = parseInt(item / 2);
       binary = (item % 2) + binary;
     }
@@ -124,14 +151,18 @@ function GOSTEasySwap(params) {
     T[i] = [].concat(hoarderN1[32][i], hoarderN2[32][i]);
   }
 
+  let answer = convertBlocking(T)
+  answer = ConvertToString(answer, params.mesLanguage)
   /*
       TODO: процесс блочного расшифрования сообщения
    */
   // массив ключей для расшифрования
   let keyDec = [].concat(keys.reverse(), keys, keys.reverse(), keys.reverse());
+  let hoarderN1Dec = new Array(33)
+  let hoarderN2Dec = new Array(33)
 
-  let hoarderN1Dec = [T.map((item) => item.slice(0, 32))],
-    hoarderN2Dec = [T.map((item) => item.slice(32, 64))];
+  hoarderN1Dec[32] = [T.map((item) => item.slice(0, 32))],
+  hoarderN2Dec[32] = [T.map((item) => item.slice(32, 64))];
 
   for (let i = 1; i <= 32; i++) {
     if (i <= 8) {
@@ -157,15 +188,14 @@ function GOSTEasySwap(params) {
       );
     }
   }
-
+ 
   // массив расшифрованных битов 
   let T0 = [];
   for (let i = 0; i < blocks.length; i++) {
-    T0[i] = [].concat(hoarderN1Dec[32][i], hoarderN2Dec[32][i]);
+    T0[i] = [].concat(hoarderN1Dec[0][i], hoarderN2Dec[0][i]);
   }
-
-  
-  return T0;
+  console.log(convertBlocking(T0))
+  return ConvertToString(convertBlocking(T0), params.mesLanguage)
 }
 
 export default GOSTEasySwap;
