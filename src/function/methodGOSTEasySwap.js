@@ -1,16 +1,48 @@
 // функция подстановки блоками S
 function SubstitutionS(array) {
+  console.log(array);
   let subArr_for_S = [];
+  let tableS = [
+    [14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7],
+    [15, 1, 8, 14, 6, 11, 3, 4, 9, 7, 2, 13, 12, 0, 5, 10],
+    [10, 0, 9, 14, 6, 3, 15, 5, 1, 13, 12, 7, 11, 4, 2, 8],
+    [7, 13, 14, 3, 0, 6, 9, 10, 1, 2, 8, 5, 11, 12, 4, 15],
+    [2, 12, 4, 1, 7, 10, 11, 6, 8, 5, 3, 15, 13, 0, 14, 9],
+    [12, 1, 10, 15, 9, 2, 6, 8, 0, 13, 3, 4, 14, 7, 5, 11],
+    [4, 11, 2, 14, 15, 0, 8, 13, 3, 12, 9, 7, 5, 10, 6, 1],
+    [13, 2, 8, 4, 6, 15, 11, 1, 10, 9, 3, 14, 5, 0, 12, 7],
+  ];
+
   for (let i = 0; i < 8; i++) {
     subArr_for_S[i] = array.slice(i * 4, (i + 1) * 4);
   }
+
+  let answer = 0,
+    resInt = 0,
+    result = [];
+  for (let i = 0; i < subArr_for_S.length; i++) {
+    answer = 0;
+    console.log(subArr_for_S);
+    subArr_for_S[i].forEach((item, index) => {
+      answer += item * 2 ** (4 - index - 1);
+    });
+    result = result.concat(ConvertToBinary([tableS[i][answer]], 4));
+    console.log(result);
+  }
+  result.forEach((item, index) => {
+    resInt += item * 2 ** (32 - index - 1);
+  });
+  resInt = resInt << 11;
+
+  return resInt;
 }
 
 // функция шифрования блока
 function IncriptionBlock(N1, N2, key) {
   let sumMod2_32 = [],
+    substS = [],
     K = 0;
-  console.log(key, 'fdfdf')
+  console.log(key, "fdfdf");
   key.map((item, index) => (K += item * 2 ** (32 - index - 1)));
   for (let i = 0; i < N1.length; i++) {
     let a = 0,
@@ -27,12 +59,10 @@ function IncriptionBlock(N1, N2, key) {
     // sumMod2_32[i] = ConvertToBinary([Math.abs((a + K) % 2 ** 32) ^ b], 32);
     //sumMod2_32[i] = ConvertToBinary([a], 32);
     //console.log("тот самый", sumMod2_32)
-    console.log("a:", a, "K:", K, "b", b);
-    console.log("operation", SumMod2((a + K) % 2 ** 32, b));
-    sumMod2_32[i] = ConvertToBinary(
-      [SumMod2((a + K) % (2 ** 32), b)],
-      32
-    );
+    //console.log("a:", a, "K:", K, "b", b);
+    //console.log("operation", SumMod2((a + K) % 2 ** 32, b));
+    let substS = SubstitutionS(ConvertToBinary([(a + K) % 2 ** 32], 32));
+    sumMod2_32[i] = ConvertToBinary([SumMod2(substS, b)], 32);
     // процесс подстановки в модуле S
     //let moduleS = SubstitutionS(sumMod2_32);
   }
@@ -114,7 +144,7 @@ function ConvertToBinary(massInt, countBit) {
   let binaryArr = "";
   for (let item of massInt) {
     let binary = (item % 2).toString();
-    for (; item > 1;) {
+    for (; item > 1; ) {
       item = parseInt(item / 2);
       binary = (item % 2) + binary;
     }
@@ -135,18 +165,23 @@ function SumMod2(left, right) {
       result[i] = 1;
     }
   }
-  let answer = 0
+  let answer = 0;
   result.forEach((item, index) => {
     answer += item * 2 ** (32 - index - 1);
   });
 
-  return answer
+  return answer;
 }
 
 // функция блочного шифрования по ГОСТ 28147-89 в режиме простой замены
 function GOSTEasySwap(params) {
-  // console.log(SumMod2(4000000000, 2000000));
-  // return;
+  /*console.log(
+    SubstitutionS([
+      0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0,
+      0, 1, 1, 0, 1, 0, 1,
+    ])
+  );
+  return;*/
   /*
       TODO: процесс блочного шифрования сообщения
    */
@@ -164,7 +199,7 @@ function GOSTEasySwap(params) {
     keysInc = [].concat(keys.reverse(), keys.reverse(), keys.reverse(), keys);
   let hoarderN1 = [blocks.map((item) => item.slice(0, 32))],
     hoarderN2 = [blocks.map((item) => item.slice(32, 64))];
-  console.log(keysInc,);
+  console.log(keysInc);
 
   for (let i = 1; i <= 32; i++) {
     console.log("шифровка");
@@ -175,8 +210,7 @@ function GOSTEasySwap(params) {
         keysInc[i - 1]
       );
       hoarderN2[i] = hoarderN1[i - 1];
-    }
-    else {
+    } else {
       hoarderN1[i] = hoarderN1[i - 1];
       hoarderN2[i] = IncriptionBlock(
         hoarderN1[i - 1],
