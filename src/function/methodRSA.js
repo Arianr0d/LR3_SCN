@@ -57,7 +57,7 @@ function FindSecretKey(N, a) {
 // функция поиска НОД
 function NOD(left, right) {
   if (right > 0) {
-    var k = left % right;
+    let k = left % right;
     return NOD(right, k);
   } else {
     return Math.abs(left);
