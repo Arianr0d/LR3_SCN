@@ -11,12 +11,12 @@
             </div>
             <textarea v-model="messageInc" class="form-control" placeholder="Введите сообщение"
             @input="funcCheckErrorMessage($event)"/>
-            <div class="form-check">
+            <!--<div class="form-check">
                <input class="form-check-input" type="radio" name="flexRadioDefault" value="ru" id="flexRadioDefault1" v-model="typeLang">
                <label class="form-check-label" for="flexRadioDefault1">Русский</label>
                <input class="form-check-input" type="radio" name="flexRadioDefault" value="en" id="flexRadioDefault2" v-model="typeLang" checked>
                <label class="form-check-label" for="flexRadioDefault2">Англиский</label>
-            </div> 
+            </div> -->
          </div> 
       </div>
       <div class="group" style="margin-left:300px;">
@@ -58,23 +58,20 @@ export default {
       CalcAlgorithm() {
          this.onClick = true;
 
-         let params = {
+         /*let params = {
             valueP: Number(this.valP),
             valueQ: Number(this.valQ),
             messageM: this.messageInc,
             mesLanguage: this.typeLang
          }
-         this.messageDec = RSA(params);
+         this.messageDec = RSA(params);*/
 
-         /*
-            ! тест алгоритма
-         */
          let param = {
             messageM: this.messageInc,
             mesLanguage: this.typeLang
          }
          let res = GOSTEasySwap(param);
-         console.log(res)
+         this.messageDec = res;
 
       },
       funcCheckErrorP_Q(event) {
