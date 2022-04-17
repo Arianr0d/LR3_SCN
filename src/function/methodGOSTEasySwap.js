@@ -65,28 +65,34 @@ function Blocking(mes) {
 }
 
 function convertBlocking(blocks) {
-  let simb = ''
-  let mes = []
+  let simb = "";
+  let mes = [];
   for (let block of blocks) {
     for (let item of block) {
-      simb += item
+      simb += item;
       if (simb.length === 8) {
-        let a = 0
-        simb.split('').forEach((item, index) => a += Number(item) * 2 ** (8 - index - 1))
-        mes.push(a)
-        simb = ''
+        let a = 0;
+        simb
+          .split("")
+          .forEach((item, index) => (a += Number(item) * 2 ** (8 - index - 1)));
+        mes.push(a);
+        simb = "";
       }
     }
   }
-  return mes
+  return mes;
 }
 
 // функция перевода сообщения в массив целых чисел
 function ConvertToInt(mes, lang) {
   if (lang == "en") {
-    return Array.from(mes).map((letter) => letter.toLowerCase().charCodeAt(0)-96);
+    return Array.from(mes).map(
+      (letter) => letter.toLowerCase().charCodeAt(0) - 96
+    );
   } else if (lang == "ru") {
-    return Array.from(mes).map((letter) => letter.toLowerCase().charCodeAt(0)-1071);
+    return Array.from(mes).map(
+      (letter) => letter.toLowerCase().charCodeAt(0) - 1071
+    );
   }
 }
 
@@ -94,10 +100,10 @@ function ConvertToInt(mes, lang) {
 function ConvertToString(mesInt, lang) {
   let result = "";
   if (lang == "en") {
-    mesInt.map((letter) => (result += String.fromCharCode(letter+96)));
+    mesInt.map((letter) => (result += String.fromCharCode(letter + 96)));
     return result;
   } else if (lang == "ru") {
-    mesInt.map((letter) => (result += String.fromCharCode(letter+1071)));
+    mesInt.map((letter) => (result += String.fromCharCode(letter + 1071)));
     return result;
   }
 }
@@ -107,7 +113,7 @@ function ConvertToBinary(massInt, countBit) {
   let binaryArr = "";
   for (let item of massInt) {
     let binary = (item % 2).toString();
-    for (; item > 1;) {
+    for (; item > 1; ) {
       item = parseInt(item / 2);
       binary = (item % 2) + binary;
     }
@@ -175,8 +181,9 @@ function GOSTEasySwap(params) {
     T[i] = [].concat(hoarderN1[32][i], hoarderN2[32][i]);
   }
 
-  let answer = convertBlocking(T)
-  answer = ConvertToString(answer, params.mesLanguage)
+  let answer = convertBlocking(T);
+  console.log("это расшифровка", answer);
+  //answer = ConvertToString(answer, params.mesLanguage)
   /*
       TODO: процесс блочного расшифрования сообщения
    */
@@ -184,8 +191,8 @@ function GOSTEasySwap(params) {
   let keyDec = [].concat(keys.reverse(), keys, keys, keys.reverse());
   console.log(keyDec);
 
-  hoarderN1Dec[32] = [T.map((item) => item.slice(0, 32))],
-  hoarderN2Dec[32] = [T.map((item) => item.slice(32, 64))];
+  let hoarderN1Dec = [T.map((item) => item.slice(0, 32))],
+    hoarderN2Dec = [T.map((item) => item.slice(32, 64))];
 
   for (let i = 31; i >= 0; i--) {
     console.log("расшифровка");
@@ -219,17 +226,17 @@ function GOSTEasySwap(params) {
     }
   }
   console.log(hoarderN1Dec, hoarderN2Dec);
- 
-  // массив расшифрованных битов 
+
+  // массив расшифрованных битов
   let T0 = [];
   for (let i = 0; i < blocks.length; i++) {
-    T0[i] = [].concat(hoarderN1Dec[0][i], hoarderN2Dec[0][i]);
+    T0[i] = [].concat(hoarderN1Dec[32][i], hoarderN2Dec[32][i]);
   }
 
   console.log("Исходное в битах:", messageToBin);
 
-  console.log(convertBlocking(T0))
-  return ConvertToString(convertBlocking(T0), params.mesLanguage)
+  console.log(convertBlocking(T0));
+  return ConvertToString(convertBlocking(T0), params.mesLanguage);
 }
 
 export default GOSTEasySwap;
