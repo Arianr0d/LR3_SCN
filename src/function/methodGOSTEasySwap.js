@@ -1,11 +1,18 @@
-// функция сложения по модулю 2^32 двух 32-разрядных
+var mexp = require("math-expression-evaluator");
 
-import math from "mathjs";
+// функция подстановки блоками S
+function SubstitutionS(array) {
+  let subArr_for_S = [];
+  for (let i = 0; i < 8; i++) {
+    subArr_for_S[i] = array.slice(i * 4, (i + 1) * 4);
+  }
+}
 
 // функция шифрования блока
 function IncriptionBlock(N1, N2, key) {
   let sumMod2_32 = [],
     K = 0;
+  console.log("N1", N1, "N2", N2);
   key.map((item, index) => (K += item * 2 ** (32 - index - 1)));
   for (let i = 0; i < N1.length; i++) {
     let a = 0,
@@ -17,7 +24,16 @@ function IncriptionBlock(N1, N2, key) {
     N2[i].forEach((item, index) => {
       b += item * 2 ** (32 - index - 1);
     });
-    sumMod2_32[i] = ConvertToBinary([Math.abs((a + K) % 2 ** 32 ^ b)], 32);
+    //let sum = a+K;
+    //console.log("result", mexp.eval("Mod2^32"));
+    // sumMod2_32[i] = ConvertToBinary([Math.abs((a + K) % 2 ** 32) ^ b], 32);
+    //console.log("тот самый", sumMod2_32)
+    sumMod2_32[i] = ConvertToBinary(
+      [a + K < 2 ** 32 ? (a + K) ^ b : (a + K - 2 ** 32) ^ b],
+      32
+    );
+    // процесс подстановки в модуле S
+    //let moduleS = SubstitutionS(sumMod2_32);
   }
   return sumMod2_32;
 }
@@ -57,6 +73,7 @@ function ConvertToInt(mes, lang) {
   }
 }
 
+// функция перевода массива чисел в бинарный вид
 function ConvertToBinary(massInt, countBit) {
   let binaryArr = "";
   for (let item of massInt) {
@@ -72,6 +89,7 @@ function ConvertToBinary(massInt, countBit) {
 
 // функция блочного шифрования по ГОСТ 28147-89 в режиме простой замены
 function GOSTEasySwap(params) {
+  console.log(5 ^ 2);
   /*
       TODO: процесс блочного шифрования сообщения
    */
@@ -79,42 +97,46 @@ function GOSTEasySwap(params) {
   // перевод сообщения в массив целых чисел
   let messageToInt = ConvertToInt(params.messageM, params.mesLanguage);
   let messageToBin = ConvertToBinary(messageToInt, 8);
-
-  //console.log(messageToInt);
-  //console.log(messageToBin);
+  console.log(messageToInt);
 
   // разбиение на блоки
   let blocks = Blocking(messageToBin);
-  //console.log(blocks);
 
   // генерация ключей
-  let keys = GenerateKeys(),
+  const keys = GenerateKeys(),
     keysInc = [].concat(keys.reverse(), keys.reverse(), keys.reverse(), keys);
   let hoarderN1 = [blocks.map((item) => item.slice(0, 32))],
     hoarderN2 = [blocks.map((item) => item.slice(32, 64))];
-  console.log(messageToInt, messageToBin);
+  console.log(keysInc);
 
   for (let i = 1; i <= 32; i++) {
+    console.log("шифровка");
     if (i <= 24) {
       hoarderN1[i] = IncriptionBlock(
         hoarderN1[i - 1],
         hoarderN2[i - 1],
-        keysInc[(i - 1) % 8]
+        keys[(i - 1) % 8]
       );
       hoarderN2[i] = hoarderN1[i - 1];
     } else if (i <= 31) {
       hoarderN1[i] = IncriptionBlock(
         hoarderN1[i - 1],
         hoarderN2[i - 1],
-        keysInc[32 - i]
+        keys[32 - i]
       );
       hoarderN2[i] = hoarderN1[i - 1];
     } else {
+      /*hoarderN1[i] = IncriptionBlock(
+        hoarderN1[i - 1],
+        hoarderN2[i - 1],
+        keys[32 - i]
+      );
+      hoarderN2[i] = hoarderN1[i - 1];*/
       hoarderN1[i] = hoarderN1[i - 1];
       hoarderN2[i] = IncriptionBlock(
         hoarderN1[i - 1],
         hoarderN2[i - 1],
-        keysInc[32 - i]
+        keys[32 - i]
       );
     }
   }
@@ -128,43 +150,52 @@ function GOSTEasySwap(params) {
       TODO: процесс блочного расшифрования сообщения
    */
   // массив ключей для расшифрования
-  let keyDec = [].concat(keys.reverse(), keys, keys.reverse(), keys.reverse());
+  let keyDec = [].concat(keys.reverse(), keys, keys, keys.reverse());
+  console.log(keyDec);
 
   let hoarderN1Dec = [T.map((item) => item.slice(0, 32))],
     hoarderN2Dec = [T.map((item) => item.slice(32, 64))];
 
-  for (let i = 1; i <= 32; i++) {
-    if (i <= 8) {
+  for (let i = 31; i >= 0; i--) {
+    console.log("расшифровка");
+    if (32 - i <= 8) {
       hoarderN1Dec[32 - i] = IncriptionBlock(
-        hoarderN1Dec[32 - i + 1],
-        hoarderN2Dec[32 - i + 1],
-        keyDec[i - 1]
+        hoarderN1Dec[32 - i - 1],
+        hoarderN2Dec[32 - i - 1],
+        keyDec[32 - i - 1]
       );
-      hoarderN2Dec[32 - i] = hoarderN1Dec[32 - i + 1];
-    } else if (i <= 31) {
+      hoarderN2Dec[32 - i] = hoarderN1Dec[32 - i - 1];
+    } else if (32 - i <= 31) {
       hoarderN1Dec[32 - i] = IncriptionBlock(
-        hoarderN1Dec[32 - i + 1],
-        hoarderN2Dec[32 - i + 1],
-        keyDec[(32 - i) % 8]
+        hoarderN1Dec[32 - i - 1],
+        hoarderN2Dec[32 - i - 1],
+        keyDec[(32 - i - 1) % 8]
       );
-      hoarderN2Dec[32 - i] = hoarderN1Dec[32 - i + 1];
+      hoarderN2Dec[32 - i] = hoarderN1Dec[32 - i - 1];
     } else {
-      hoarderN1Dec[32 - i] = hoarderN1Dec[32 - i + 1];
+      /*hoarderN1Dec[32 - i] = IncriptionBlock(
+        hoarderN1Dec[32 - i - 1],
+        hoarderN2Dec[32 - i - 1],
+        keyDec[32 - i - 1]
+      );
+      hoarderN2Dec[32 - i] = hoarderN1Dec[32 - i - 1];*/
+      hoarderN1Dec[32 - i] = hoarderN1Dec[32 - i - 1];
       hoarderN2Dec[32 - i] = IncriptionBlock(
-        hoarderN1Dec[32 - i + 1],
-        hoarderN2Dec[32 - i + 1],
-        keyDec[32 - i]
+        hoarderN1Dec[32 - i - 1],
+        hoarderN2Dec[32 - i - 1],
+        keyDec[32 - i - 1]
       );
     }
   }
+  console.log(hoarderN1Dec, hoarderN2Dec);
 
-  // массив расшифрованных битов 
+  // массив расшифрованных битов
   let T0 = [];
   for (let i = 0; i < blocks.length; i++) {
     T0[i] = [].concat(hoarderN1Dec[32][i], hoarderN2Dec[32][i]);
   }
 
-  
+  console.log("Исходное в битах:", messageToBin);
   return T0;
 }
 
