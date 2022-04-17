@@ -1,5 +1,3 @@
-var mexp = require("math-expression-evaluator");
-
 // функция подстановки блоками S
 function SubstitutionS(array) {
   let subArr_for_S = [];
@@ -12,7 +10,6 @@ function SubstitutionS(array) {
 function IncriptionBlock(N1, N2, key) {
   let sumMod2_32 = [],
     K = 0;
-  console.log("N1", N1, "N2", N2);
   key.map((item, index) => (K += item * 2 ** (32 - index - 1)));
   for (let i = 0; i < N1.length; i++) {
     let a = 0,
@@ -27,9 +24,13 @@ function IncriptionBlock(N1, N2, key) {
     //let sum = a+K;
     //console.log("result", mexp.eval("Mod2^32"));
     // sumMod2_32[i] = ConvertToBinary([Math.abs((a + K) % 2 ** 32) ^ b], 32);
+    //sumMod2_32[i] = ConvertToBinary([a], 32);
     //console.log("тот самый", sumMod2_32)
+    console.log("a:", a, "K:", K, "b", b);
+    console.log("operation", (a + (K % 2 ** 20)) ^ b);
+    console.log("operation без b", a + (K % 2 ** 20));
     sumMod2_32[i] = ConvertToBinary(
-      [a + K < 2 ** 32 ? (a + K) ^ b : (a + K - 2 ** 32) ^ b],
+      [a + K < 2 ** 20 ? (a + K) ^ b : (a + K) % 2 ** 20 ^ b],
       32
     );
     // процесс подстановки в модуле S
@@ -122,9 +123,26 @@ function ConvertToBinary(massInt, countBit) {
   return binaryArr.split("").map((item) => parseInt(item));
 }
 
+function SumMod2(left, right) {
+  let convLeft = ConvertToBinary([left], 32),
+    convRight = ConvertToBinary([right], 32),
+    result = [];
+
+  for (let i = 0; i < convLeft.length; i++) {
+    if (convLeft[i] == convRight[i]) {
+      result[i] = 0;
+    } else {
+      result[i] = 1;
+    }
+  }
+
+  return convertBlocking([result]);
+}
+
 // функция блочного шифрования по ГОСТ 28147-89 в режиме простой замены
 function GOSTEasySwap(params) {
-  console.log(5 ^ 2);
+  //console.log(SumMod2(4000000000, 200000));
+  //return;
   /*
       TODO: процесс блочного шифрования сообщения
    */
@@ -174,6 +192,7 @@ function GOSTEasySwap(params) {
         keys[32 - i]
       );
     }
+    console.log("N1:", hoarderN1[i], "N2:", hoarderN2[i]);
   }
   console.log(hoarderN1, hoarderN2);
   let T = [];
@@ -235,6 +254,7 @@ function GOSTEasySwap(params) {
 
   console.log("Исходное в битах:", messageToBin);
 
+  console.log(T0);
   console.log(convertBlocking(T0));
   return ConvertToString(convertBlocking(T0), params.mesLanguage);
 }
